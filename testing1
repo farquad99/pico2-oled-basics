@@ -1,0 +1,50 @@
+test repo nothing usefull in here
+Imports VB = Microsoft.VisualBasic
+Imports System.Data.OleDb
+Imports System.IO
+
+Module Module1
+
+    Sub Main()
+        '' table en bestand uit lijst inlezen en verwerken
+        Dim filenaam As String
+        Dim table As String
+        Dim bestand As String
+        Dim strReader As StreamReader
+        Dim invoerRegel As String
+        Dim regels() As String
+        Dim velden() As String
+        Dim antw As String
+        Dim prod As Boolean
+        Dim steek As Boolean = False
+        prod = False
+        Console.WriteLine("databases van productie uitlezen ? ")
+        antw = Console.ReadLine()
+        If antw.Equals("Ja") Then
+            prod = True
+        End If
+        Dim connect As String
+        Console.WriteLine("Steekproef dump ?")
+        antw = Console.ReadLine()
+        If antw.Equals("Ja") Then
+            connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\temp\SteekProef.mdb"
+            filenaam = "c:\temp\steek.lijst"
+            If prod Then
+                connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=K:\Uitvalteam AA\Data\SteekProef.mdb"
+                filenaam = "c:\temp\prod\steek.lijst"
+            End If
+            strReader = New StreamReader(filenaam)
+            invoerRegel = strReader.ReadToEnd()
+            invoerRegel = Replace(invoerRegel, VB.Chr(10), "")
+            regels = Split(invoerRegel, VB.Chr(13))
+            For Teller As Integer = 0 To UBound(regels)
+                velden = Split(regels(Teller), ";")
+                If Left(velden(0), 1) <> "#" Then
+                    table = velden(0)
+                    bestand = velden(1)
+                    dumpTabelsteek(table, bestand, connect)
+                End If
+            Next
+            strReader.Close()
+            strReader = Nothing
+        End If
