@@ -1,0 +1,138 @@
+    ''' <summary>
+    ''' '
+    ''' </summary>
+    ''' <param name="tabel"></param>
+    ''' <param name="bestnaam"></param>
+    Sub dumpTabelsteek(ByVal tabel As String, ByVal bestnaam As String, ByVal connector As String)
+        'Dim ConnectieSteekproef As String
+        'Dim da As OleDbDataAdapter
+        'Dim rs As New DataSet
+        Dim connectie As OleDb.OleDbConnection = New OleDb.OleDbConnection(connector)
+        Try
+            connectie.Open()
+            Dim sqlStatement As String
+            sqlStatement = String.Concat("SELECT * from ", tabel)
+            Dim command As OleDb.OleDbCommand = New OleDb.OleDbCommand(sqlStatement, connectie)
+            Dim oledbReader As OleDbDataReader = command.ExecuteReader()
+            Dim oWrite As StreamWriter
+            oWrite = System.IO.File.CreateText(bestnaam)
+            Console.WriteLine(String.Concat("best : ", bestnaam))
+            Dim q As Char
+            q = Chr(34)
+            Dim lim As String
+            lim = ";"
+            Dim schemaTable As DataTable
+            Dim row As DataRow
+            Dim column As DataColumn
+            Dim count As Integer = 0
+            Dim last As Integer
+            Dim regel As String
+            Dim kregel As String
+            Dim velden As ArrayList = New ArrayList()
+            Dim dubbel As String
+            Dim uit As String
+            schemaTable = oledbReader.GetSchemaTable()
+            kregel = ""
+            regel = ""
+            For Each row In schemaTable.Rows
+                count = count + 1
+                For Each column In schemaTable.Columns
+                    'Console.WriteLine(String.Concat(column.ColumnName, " is ", row(column)))
+                    If column.ColumnName Is "ColumnName" Then
+                        '           Console.WriteLine(row(column))
+                        kregel = String.Concat(kregel, row(column), lim)
+                    End If
+                    If column.ColumnName Is "DataType" Then
+                        '            Console.WriteLine(row(column))
+                        regel = String.Concat(regel, row(column), lim)
+                        velden.Add(String.Concat(row(column)))
+                    End If
+                Next
+            Next
+            last = count - 1
+            ' Console.WriteLine(String.Concat("aantal velden is ", count))
+            'Console.WriteLine(kregel)
+            'Console.WriteLine(regel)
+            'Console.ReadLine()
+            '' hier kopregel schrijven '' nog laatste ; van kop verwijderen ?
+            kregel = Left(kregel, kregel.Length - 1)
+            oWrite.WriteLine(String.Concat(kregel))
+            '' veld types ophalen uit array velden en aantal uit count
+            While oledbReader.Read
+                For iTel As Integer = 0 To count - 2
+                    'Console.WriteLine(String.Concat(":", velden(iTel)))
+                    If String.Compare(velden(iTel), "System.String", True) = 0 Then
+                        'Console.WriteLine(String.Concat("String is ", oledbReader.Item(iTel)))
+                        '' verwijder lf uit strings
+                        uit = String.Concat(oledbReader.Item(iTel))
+                        uit = Replace(uit, vbLf, "")
+                        oWrite.Write(String.Concat(q, uit, q, lim))
+                    End If
+                    '' hier dus andere veld types , zoals integer , boolean en double ook date-time
+                    If String.Compare(velden(iTel), "System.Int32", True) = 0 Then
+                        oWrite.Write(String.Concat(oledbReader.Item(iTel), lim))
+                    End If
+                    If String.Compare(velden(iTel), "System.Int16", True) = 0 Then
+                        oWrite.Write(String.Concat(oledbReader.Item(iTel), lim))
+                    End If
+                    If String.Compare(velden(iTel), "System.Double", True) = 0 Then
+                        '' verwissel de komma in de double voor een punt
+                        dubbel = String.Concat(oledbReader.Item(iTel))
+                        dubbel = Replace(dubbel, ",", ".")
+                        oWrite.Write(String.Concat(dubbel, lim))
+                    End If
+                    If String.Compare(velden(iTel), "System.Boolean", True) = 0 Then
+                        oWrite.Write(String.Concat(oledbReader.Item(iTel), lim))
+                    End If
+                    If String.Compare(velden(iTel), "System.DateTime", True) = 0 Then
+                        oWrite.Write(String.Concat(oledbReader.Item(iTel), lim))
+                    End If
+
+
+                Next
+                '' hier een laastste veld wegschrijven zonder eind ";"
+                If String.Compare(velden(last), "System.String", True) = 0 Then
+                    'Console.WriteLine(String.Concat("String is ", oledbReader.Item(last)))
+                    '' verwijder lf uit strings
+                    uit = String.Concat(oledbReader.Item(last))
+                    uit = Replace(uit, vbLf, "")
+                    oWrite.Write(String.Concat(q, uit, q))
+                End If
+                '' hier dus andere veld types , zoals integer , boolean en double 
+                If String.Compare(velden(last), "System.Int32", True) = 0 Then
+                    oWrite.Write(String.Concat(oledbReader.Item(last)))
+                End If
+                If String.Compare(velden(last), "System.Int16", True) = 0 Then
+                    oWrite.Write(String.Concat(oledbReader.Item(last)))
+                End If
+                If String.Compare(velden(last), "System.Double", True) = 0 Then
+                    '' verwissel de komma in de double voor een punt
+                    dubbel = String.Concat(oledbReader.Item(last))
+                    dubbel = Replace(dubbel, ",", ".")
+                    oWrite.Write(String.Concat(dubbel))
+                End If
+                If String.Compare(velden(last), "System.Boolean", True) = 0 Then
+                    oWrite.Write(String.Concat(oledbReader.Item(last)))
+                End If
+                If String.Compare(velden(last), "System.DateTime", True) = 0 Then
+                    oWrite.Write(String.Concat(oledbReader.Item(last)))
+                End If
+
+                'Console.ReadLine()
+                oWrite.WriteLine()
+                'oWrite.WriteLine(String.Concat(q, oledbReader.Item(0), q, ";", q, oledbReader.Item(1), q))
+            End While
+            'Console.ReadLine()
+            oledbReader.Close()
+            command.Dispose()
+            connectie.Close()
+            oWrite.Flush()
+            oWrite.Close()
+        Catch ex As Exception
+            Throw New Exception("Fout bij dumptabel", ex)
+        Finally
+            connectie.Close()
+        End Try
+
+    End Sub
+End Module
