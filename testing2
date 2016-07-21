@@ -1,0 +1,51 @@
+        Console.WriteLine("Uitvalteam dump ?")
+        antw = Console.ReadLine()
+        If antw.Equals("Ja") Then
+            connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\temp\uitvalteam.mdb"
+            filenaam = "c:\temp\uitval.lijst"
+            If prod Then
+                connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=K:\Uitvalteam AA\Data\uitvalteam.mdb"
+                filenaam = "c:\temp\prod\uitval.lijst"
+            End If
+            strReader = New StreamReader(filenaam)
+            invoerRegel = strReader.ReadToEnd()
+            invoerRegel = Replace(invoerRegel, VB.Chr(10), "")
+            regels = Split(invoerRegel, VB.Chr(13))
+            For Teller As Integer = 0 To UBound(regels)
+                velden = Split(regels(Teller), ";")
+                If Left(velden(0), 1) <> "#" Then
+                    table = velden(0)
+                    bestand = velden(1)
+                    dumpTabelsteek(table, bestand, connect)
+                End If
+            Next
+            strReader.Close()
+            strReader = Nothing
+        End If
+        Console.WriteLine("Uitvalteamsoftware2016 dump ?")
+        antw = Console.ReadLine()
+        If antw.Equals("Ja") Then
+            '' UitvalTeamSoftware2016.mdb
+            connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\temp\UitvalTeamSoftware2016.mdb"
+            filenaam = "c:\temp\soft.lijst"
+            If prod Then
+                connect = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source=K:\Uitvalteam AA\Data\UitvalTeamSoftware2016.mdb"
+                filenaam = "c:\temp\prod\soft.lijst"
+            End If
+            strReader = New StreamReader(filenaam)
+            invoerRegel = strReader.ReadToEnd()
+            invoerRegel = Replace(invoerRegel, VB.Chr(10), "")
+            regels = Split(invoerRegel, VB.Chr(13))
+            For Teller As Integer = 0 To UBound(regels)
+                velden = Split(regels(Teller), ";")
+                ''If InStr(velden(0), "#") = 0 Then '' dit kan ook , weet niet wat sneller is , en of dat merkbaar is 
+                If (Left(velden(0), 1) <> "#") Then
+                    table = velden(0)
+                    bestand = velden(1)
+                    dumpTabelsteek(table, bestand, connect)
+                End If
+            Next
+            strReader.Close()
+            strReader = Nothing
+        End If
+    End Sub
