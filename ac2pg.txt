@@ -1,0 +1,47 @@
+Imports Npgsql
+
+
+Module Module1
+
+    Sub Main()
+
+        Using Pcon As New NpgsqlConnection
+            Pcon.ConnectionString = "Server=1xxxx;Port=5432;Database=test;User Id=;Password=;"
+            Try
+                Pcon.Open()
+                If Pcon.State = ConnectionState.Open Then
+                    Console.WriteLine("Connected To PostGres")
+                    '' MsgBox("Connected To PostGres", MsgBoxStyle.MsgBoxSetForeground)
+                End If
+                '' nu using gebruiken
+                Using cmd As New NpgsqlCommand
+                    '' verbind command met connectie
+                    cmd.Connection = Pcon
+                    cmd.CommandText = "INSERT INTO demo (naam) VALUES ('neptune')"
+                    cmd.ExecuteNonQuery()
+                    '' toon resultaat
+                    cmd.CommandText = "SELECT naam from demo"
+                    '' gebruik datareader 
+                    Using reader = cmd.ExecuteReader
+                        While reader.Read
+                            Console.WriteLine(reader.GetString(0))
+                        End While
+                    End Using
+                End Using
+                Console.WriteLine("klaar")
+                Console.ReadKey()
+            Catch ex As Npgsql.NpgsqlException
+                Console.Write("Postgres Exception: " + ex.ToString())
+                Console.ReadKey()
+            Catch ex As Exception
+                Console.WriteLine(ex.Message)
+                Console.ReadKey()
+            Finally
+                If Pcon.State = ConnectionState.Open Then
+                    Pcon.Close()
+                End If
+            End Try
+        End Using
+    End Sub
+
+End Module
