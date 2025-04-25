@@ -1,4 +1,4 @@
-Pseudo_code in VBA
-' First get list of tables
-' for each table in list
-' export table to textfile
+init spi1 
+init display
+display text "It is working"
+
